@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/zotero-api-client"></script>
+</head>
+<body>
+    <header role="banner">
+        <h1>Zotero Library API</h1>
+    </header>
+    <main>
+        <ul id="item-list"></ul>
+    </main>
+    <script type="module">
+        const { default: api } = ZoteroApiClient;
+		const displayWorkingLibrary = async function() {
+            let items = [];
+            const group_id = 379;
+            const collection_id = 'THX4R2ST';
+
+            let options = {limit:100, start:0};
+            let response = await api(false, options).library('group', group_id).collections(collection_id).items().top().get();
+
+            //read the response, assuming it was successful
+            let totalResults = response.getTotalResults();
+            console.log('Total Results: ' + totalResults);
+
+            let totalRetrieved = 0;
+
+            while (totalRetrieved < totalResults) {
+                options.start = totalRetrieved;
+                let response = await api(false, options).library('group', group_id).collections(collection_id).items().top().get();
+                let results = response.getData();
+                //console.log(results);
+                totalRetrieved = totalRetrieved + results.length;
+                items.push(...results);
+            }
+
+            console.log(items);
+            console.log('Total Retrieved: ' + totalRetrieved)
+
+            //do something with the item data
+            let itemList = document.querySelector("#item-list");
+            items.forEach((item) => {
+                let li = document.createElement('li');
+                li.textContent = item.title;
+                itemList.appendChild(li);
+            });
+        };
+
+        displayWorkingLibrary();
+    </script>
+</body>
+</html>
